@@ -11,13 +11,22 @@ def home():
 
 # 🔥 ROTA QUE O META PRECISA
 @app.get("/webhook")
-async def verify_webhook(request: Request):
-    params = dict(request.query_params)
-    
-    if params.get("hub.verify_token") == VERIFY_TOKEN:
-        return PlainTextResponse(params.get("hub.challenge"))
+from fastapi.responses import PlainTextResponse
 
-    return PlainTextResponse("Erro de verificação", status_code=403)
+VERIFY_TOKEN = "colimix123"
+
+@app.get("/webhook")
+@app.get("/webhook/")
+async def verify_webhook(request: Request):
+    p = request.query_params
+    mode = p.get("hub.mode")
+    token = (p.get("hub.verify_token") or "").strip()
+    challenge = p.get("hub.challenge")
+
+    if mode == "subscribe" and token == VERIFY_TOKEN:
+        return PlainTextResponse(challenge)
+
+    return PlainTextResponse("Erro", status_code=403)
 
 # RECEBER MENSAGENS
 @app.post("/webhook")
